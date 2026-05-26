@@ -1,0 +1,32 @@
+workflows:
+  ios-debug:
+    name: WEGO iOS Debug
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      vars:
+        FIREBASE_OPTIONS: $FIREBASE_OPTIONS
+    scripts:
+      - name: Get packages
+        script: flutter pub get
+
+      - name: Restore firebase_options.dart
+        script: |
+          echo "$FIREBASE_OPTIONS" > lib/firebase_options.dart
+
+      - name: Pod install
+        script: |
+          cd ios
+          pod install
+
+      - name: Build iOS IPA
+        script: |
+          flutter build ios --debug --no-codesign
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/Runner.app
+          zip -r WEGO.ipa Payload
+
+    artifacts:
+      - build/ios/iphoneos/WEGO.ipa
